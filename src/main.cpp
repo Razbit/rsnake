@@ -25,8 +25,6 @@ using namespace std;
 
 int main()
 {
-	cout << "Hello!\n";
-
 	timeval t1, t2;
 	double dur;
 	dir_t dir;
@@ -44,13 +42,14 @@ int main()
 		dur = (t2.tv_sec - t1.tv_sec) * 1000.0;
 		dur += (t2.tv_usec - t1.tv_usec) / 1000.0;
 
-		dir = snake.getdir();
+		dir = snake.getdir(); //get input
 		if (dir == DIR_VOID)
 				dir = snake.curDir;
 		else
 			snake.curDir = dir;
 		
-		if (dur > 200)
+		if (((snake.curDir == DIR_UP || snake.curDir == DIR_DOWN) && dur > snake.speed)
+			|| ((snake.curDir == DIR_RIGHT || snake.curDir == DIR_LEFT) && dur > (snake.speed-50)))
 		{
 			snake.curDir = dir;
 			

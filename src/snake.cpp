@@ -17,6 +17,7 @@
 
 #include <vector>
 #include <cstdio>
+#include <cstdlib>
 #include <ncurses.h>
 
 #include "snake.h"
@@ -32,6 +33,10 @@ Snake::Snake()
 	keypad(stdscr, TRUE);
 
 	getmaxyx(stdscr, rows, cols);
+
+	food = 0;
+	spawnFood();
+	speed = 100;
 	
 	snakePiece init = {cols/2, rows/2};
 	snakeBody.push_back(init);
@@ -49,10 +54,16 @@ void Snake::displ()
 	//clears screen, renders the snake
 	initScreen();
 	
-	for (unsigned int i = 0; i < snakeBody.size(); i++)
+	for (unsigned int i = 1; i < snakeBody.size(); i++)
 	{
-	    mvprintw(snakeBody.at(i).y, snakeBody.at(i).x, bodyCh);
+		mvprintw(snakeBody.at(i-1).y, snakeBody.at(i-1).x, bodyCh);
 	}
+
+	mvprintw(snakeBody.back().y, snakeBody.back().x, headCh);
+
+	if (food)
+		mvprintw(food->y, food->x, foodCh);
+	
 	refresh();
 }
 
@@ -111,7 +122,14 @@ error_t Snake::move(dir_t dir)
 		temp.x = 1;
 	}
 
-	snakeBody.erase(snakeBody.begin()); //erase first element (the oldest one)
+	//if theres food at our "head", we shall eat it and become longer
+	if (food && (temp.x == food->x && temp.y == food->y))
+	{
+		eat();
+		spawnFood();
+    }
+	else //which means that we should not erase the "tail" piece..
+		snakeBody.erase(snakeBody.begin()); //erase first element (the oldest one)
 
 	//does the snake intersect with itself?
 	bool intersect = false;
@@ -174,4 +192,42 @@ dir_t Snake::getdir()
 		return DIR_VOID;
 	else
 		return ret;
+}
+
+void Snake::eat()
+{
+	//destroy the current food..
+	delete food;
+	food = 0;
+	
+	if (speed > 50) //for the game shall not be too easy :Dx
+		speed--;
+}
+
+void Snake::spawnFood()
+{
+	//find a non-snake-reserved position, spawn a food to it and set it as the cur food
+	food_t* temp = new food_t;
+	bool avail = false;
+	
+	while (!avail)
+	{
+		temp->x = rand() % (cols - 2);
+		temp->y = rand() % (rows - 2);
+
+		temp->x++;
+		temp->y++;
+		
+		avail = true;
+		
+		for (unsigned int i = 0; i < snakeBody.size(); i++)
+		{
+			if (temp->x == snakeBody.at(i).x && temp->y == snakeBody.at(i).y) {
+				avail = false;
+				break;
+			}
+		}
+	}
+
+	food = temp; //set as cur food
 }

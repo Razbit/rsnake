@@ -20,8 +20,16 @@
 #include <vector>
 
 #define bodyCh "O"
+#define headCh "X"
+#define foodCh "F"
 
 struct snakePiece
+{
+	int x;
+	int y;
+};
+
+struct food_t
 {
 	int x;
 	int y;
@@ -51,13 +59,17 @@ public:
 	error_t move(dir_t dir);
 	void displ();
 	dir_t getdir();
+
+	int speed;
 	dir_t curDir;
 	
 private:
-	int score;
-	int length;
 	int rows, cols;
+	food_t* food;
 
+	void eat();
+	void spawnFood();
+	
 	void addPiece(snakePiece);
 	std::vector<snakePiece > snakeBody;
 	void initScreen();
