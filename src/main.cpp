@@ -29,9 +29,11 @@ int main()
 
 	timeval t1, t2;
 	double dur;
-	
-	Snake snake;
+	dir_t dir;
 
+	Snake snake;
+	snake.curDir = DIR_RIGHT;
+	
 	gettimeofday(&t1, NULL);
 
 	snake.displ();
@@ -42,9 +44,17 @@ int main()
 		dur = (t2.tv_sec - t1.tv_sec) * 1000.0;
 		dur += (t2.tv_usec - t1.tv_usec) / 1000.0;
 
-		if (dur > 250)
+		dir = snake.getdir();
+		if (dir == DIR_VOID)
+				dir = snake.curDir;
+		else
+			snake.curDir = dir;
+		
+		if (dur > 200)
 		{
-			snake.move(DIR_RIGHT);
+			snake.curDir = dir;
+			
+			snake.move(dir);
 			snake.displ();
 			gettimeofday(&t1, NULL);
 		}

@@ -26,6 +26,10 @@ using namespace std;
 Snake::Snake()
 {
 	initscr();
+	cbreak(); //disable line buffering
+	noecho();
+	halfdelay(1); //don't wait for the user's input for too long
+	keypad(stdscr, TRUE);
 
 	getmaxyx(stdscr, rows, cols);
 	
@@ -37,12 +41,12 @@ Snake::Snake()
 
 Snake::~Snake()
 {
-	getch();
 	endwin();
 }
 
 void Snake::displ()
 {
+	//clears screen, renders the snake
 	initScreen();
 	
 	for (unsigned int i = 0; i < snakeBody.size(); i++)
@@ -83,6 +87,8 @@ error_t Snake::move(dir_t dir)
 		temp.x = snakeBody.back().x + 1;
 		temp.y = snakeBody.back().y;
 		break;
+	case DIR_VOID:
+		break;
 	}
 
 	if (temp.y < 1) //we are out of the screen..
@@ -106,7 +112,66 @@ error_t Snake::move(dir_t dir)
 	}
 
 	snakeBody.erase(snakeBody.begin()); //erase first element (the oldest one)
+
+	//does the snake intersect with itself?
+	bool intersect = false;
+	for (unsigned int i = 0; i < snakeBody.size(); i++)
+	{
+		if (matches(temp, snakeBody.at(i)))
+			intersect = true;
+	}
+
+	if (intersect)
+		printw("INTERSECTION!");
+
 	snakeBody.push_back(temp);
 	
 	return NORMAL;
+}
+
+bool Snake::matches(snakePiece piece1, snakePiece piece2)
+{
+	if ((piece1.x == piece2.x) && (piece1.y == piece2.y))
+		return true;
+	
+	return false;
+}
+
+dir_t Snake::getdir()
+{
+	//fetch input from user
+	
+	int ch = getch();
+	dir_t ret;
+
+	switch (ch)
+	{
+	case KEY_LEFT:
+		ret = DIR_LEFT;
+		break;
+	case KEY_RIGHT:
+		ret = DIR_RIGHT;
+		break;		
+	case KEY_UP:
+		ret = DIR_UP;
+		break;		
+	case KEY_DOWN:
+		ret = DIR_DOWN;
+		break;		
+	case ERR:
+	default:
+		return DIR_VOID;	
+	}
+
+	//we can't turn around 180 degs at once!
+	if (ret == DIR_LEFT && curDir == DIR_RIGHT)
+		return DIR_VOID;
+	else if (ret == DIR_RIGHT && curDir == DIR_LEFT)
+		return DIR_VOID;
+	else if (ret == DIR_UP && curDir == DIR_DOWN)
+		return DIR_VOID;
+	else if (ret == DIR_DOWN && curDir == DIR_UP)
+		return DIR_VOID;
+	else
+		return ret;
 }

@@ -30,10 +30,6 @@ struct snakePiece
 enum error_t
 {
 	NORMAL,
-	OUT_TOP,
-	OUT_BOT,
-	OUT_LEFT,
-	OUT_RIGHT,
 	INTERSECT
 };
 
@@ -42,7 +38,8 @@ enum dir_t
 	DIR_UP,
 	DIR_DOWN,
 	DIR_RIGHT,
-	DIR_LEFT
+	DIR_LEFT,
+	DIR_VOID
 };
 
 class Snake
@@ -53,14 +50,18 @@ public:
 
 	error_t move(dir_t dir);
 	void displ();
+	dir_t getdir();
+	dir_t curDir;
 	
 private:
 	int score;
+	int length;
 	int rows, cols;
 
 	void addPiece(snakePiece);
 	std::vector<snakePiece > snakeBody;
 	void initScreen();
+	bool matches(snakePiece piece1, snakePiece piece2);
 };
 
 #endif //_H_SNAKE
