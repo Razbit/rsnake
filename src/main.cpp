@@ -1,4 +1,6 @@
-/*  This file is part of Rsnake, a snake-like game.
+/*  COPYRIGHT EETU "RAZBIT" PESONEN, 2014
+   
+    This file is part of Rsnake, a snake-like game.
 
     Rsnake is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -13,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with Rsnake.  If not, see <http://www.gnu.org/licenses/>. */
 
-/* main.cpp - defines entry point */
+/* main.cpp - defines entry point and main game loop*/
 
 #include <cstdio>
 #include <iostream>
@@ -66,7 +68,7 @@ int main()
 		{
 			pSnake->curDir = dir;
 			
-			if (pSnake->move(dir) == INTERSECT)
+			if (pSnake->move(dir) == INTERSECT) //interscetion -> game over
 			{
 				pSnake->gameOver();
 				pSnake->exit();
