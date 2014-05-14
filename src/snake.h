@@ -1,4 +1,6 @@
-/*  This file is part of Rsnake, a snake-like game.
+/*  COPYRIGHT EETU "RAZBIT" PESONEN, 2014
+
+    This file is part of Rsnake, a snake-like game.
 
     Rsnake is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -12,6 +14,7 @@
 
     You should have received a copy of the GNU General Public License
     along with Rsnake.  If not, see <http://www.gnu.org/licenses/>. */
+
 /*  snake.h - declares the snake and a bunch of functionality */
 
 #ifndef _H_SNAKE
