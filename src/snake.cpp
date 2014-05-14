@@ -1,4 +1,6 @@
-/*  This file is part of Rsnake, a snake-like game.
+/*  COPYRIGHT EETU "RAZBIT" PESONEN, 2014
+	
+    This file is part of Rsnake, a snake-like game.
 
     Rsnake is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
