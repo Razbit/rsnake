@@ -58,13 +58,19 @@ public:
 
 	error_t move(dir_t dir);
 	void displ();
+	void initWelcome();
+	void displWelcome(int time);
 	dir_t getdir();
-
+	int getLen();
+	void gameOver();
+	void exit();
+	
 	int speed;
 	dir_t curDir;
 	
 private:
 	int rows, cols;
+	int length;
 	food_t* food;
 
 	void eat();

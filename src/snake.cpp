@@ -16,6 +16,7 @@
 /*  snake.cpp - defines a bunch of functionality */
 
 #include <vector>
+#include <cstring>
 #include <cstdio>
 #include <cstdlib>
 #include <ncurses.h>
@@ -29,7 +30,8 @@ Snake::Snake()
 	initscr();
 	cbreak(); //disable line buffering
 	noecho();
-	halfdelay(1); //don't wait for the user's input for too long
+	//halfdelay(1); //don't wait for the user's input for too long
+	timeout(1);
 	keypad(stdscr, TRUE);
 
 	getmaxyx(stdscr, rows, cols);
@@ -37,15 +39,20 @@ Snake::Snake()
 	food = 0;
 	spawnFood();
 	speed = 100;
+	length = 2;
 	
 	snakePiece init = {cols/2, rows/2};
 	snakeBody.push_back(init);
-	snakePiece temp = {cols/2, (rows/2 + 1)};
+	snakePiece temp = {(cols/2 +1), rows/2};
 	snakeBody.push_back(temp);
+
+	initWelcome();
 }
 
 Snake::~Snake()
 {
+	delete food;
+	food = 0;
 	endwin();
 }
 
@@ -122,15 +129,6 @@ error_t Snake::move(dir_t dir)
 		temp.x = 1;
 	}
 
-	//if theres food at our "head", we shall eat it and become longer
-	if (food && (temp.x == food->x && temp.y == food->y))
-	{
-		eat();
-		spawnFood();
-    }
-	else //which means that we should not erase the "tail" piece..
-		snakeBody.erase(snakeBody.begin()); //erase first element (the oldest one)
-
 	//does the snake intersect with itself?
 	bool intersect = false;
 	for (unsigned int i = 0; i < snakeBody.size(); i++)
@@ -138,10 +136,21 @@ error_t Snake::move(dir_t dir)
 		if (matches(temp, snakeBody.at(i)))
 			intersect = true;
 	}
+	
+	//if theres food at our "head", we shall eat it and become longer
+	if (food && (temp.x == food->x && temp.y == food->y))
+	{
+		eat();
+		spawnFood();
+		length++;
+    }
+
+	else if (!intersect) //which means that we should not erase the "tail" piece..
+		snakeBody.erase(snakeBody.begin()); //erase first element
 
 	if (intersect)
-		printw("INTERSECTION!");
-
+		return INTERSECT;
+	
 	snakeBody.push_back(temp);
 	
 	return NORMAL;
@@ -230,4 +239,54 @@ void Snake::spawnFood()
 	}
 
 	food = temp; //set as cur food
+}
+
+int Snake::getLen()
+{
+	return length;
+}
+
+void Snake::initWelcome()
+{
+	char msg[] = "Welcome to Razbit's Rsnake!";
+	int msglen = strlen(msg);
+
+	mvprintw(8, (cols-msglen)/2, msg);
+	refresh();
+}
+
+void Snake::displWelcome(int time)
+{
+	char msg[20];
+
+	sprintf(msg, "Game will begin in %i..", time);
+	int msglen = strlen(msg);
+
+	mvprintw(9, (cols-msglen)/2, msg);
+	refresh();
+}
+
+void Snake::gameOver()
+{
+	char msg[] = "Game over!";
+	int msglen = strlen(msg);
+
+	mvprintw(8, (cols-msglen)/2, msg);
+
+	char score[50];
+
+	sprintf(score, "Score: %i", length);
+	int scoreLen = strlen(score);
+
+	mvprintw(10, (cols-scoreLen)/2, score);
+
+	refresh();
+}
+
+void Snake::exit()
+{
+	mvprintw(16, (cols-strlen("Press any key.."))/2, "Press any key..");
+	timeout(0);
+	while (getch() == ERR)
+		int x = 0;
 }

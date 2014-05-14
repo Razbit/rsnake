@@ -29,12 +29,24 @@ int main()
 	double dur;
 	dir_t dir;
 
-	Snake snake;
-	snake.curDir = DIR_RIGHT;
+	Snake* pSnake = new Snake;
+	pSnake->curDir = DIR_RIGHT;
 	
 	gettimeofday(&t1, NULL);
 
-	snake.displ();
+	while (true) //show welcome message
+	{
+		gettimeofday(&t2, NULL); //get delay
+		dur = (t2.tv_sec - t1.tv_sec) * 1000.0;
+		dur += (t2.tv_usec - t1.tv_usec) / 1000.0;
+
+		if (dur > 5000)
+			break;
+
+		pSnake->displWelcome((int)(5-dur/1000.0));
+	}
+
+	pSnake->displ();
 	
 	while (true)
 	{
@@ -42,19 +54,29 @@ int main()
 		dur = (t2.tv_sec - t1.tv_sec) * 1000.0;
 		dur += (t2.tv_usec - t1.tv_usec) / 1000.0;
 
-		dir = snake.getdir(); //get input
+		dir = pSnake->getdir(); //get input
 		if (dir == DIR_VOID)
-				dir = snake.curDir;
+				dir = pSnake->curDir;
 		else
-			snake.curDir = dir;
+			pSnake->curDir = dir;
 		
-		if (((snake.curDir == DIR_UP || snake.curDir == DIR_DOWN) && dur > snake.speed)
-			|| ((snake.curDir == DIR_RIGHT || snake.curDir == DIR_LEFT) && dur > (snake.speed-50)))
+		if (((pSnake->curDir == DIR_UP || pSnake->curDir == DIR_DOWN) && dur > pSnake->speed)
+			|| ((pSnake->curDir == DIR_RIGHT || pSnake->curDir == DIR_LEFT) && dur > (pSnake->speed-50)))
+			//compensates the line spacing, thus such complication..
 		{
-			snake.curDir = dir;
+			pSnake->curDir = dir;
 			
-			snake.move(dir);
-			snake.displ();
+			if (pSnake->move(dir) == INTERSECT)
+			{
+				pSnake->gameOver();
+				pSnake->exit();
+				
+				delete pSnake;
+				return 0;
+			}
+			
+			pSnake->displ();
+			
 			gettimeofday(&t1, NULL);
 		}
 	}
