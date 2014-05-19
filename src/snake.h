@@ -26,63 +26,64 @@
 #define headCh "X"
 #define foodCh "F"
 
-struct snakePiece
+struct snakePiece //all the data necessary to display a piece of the snake
 {
 	int x;
 	int y;
 };
 
-struct food_t
+struct food_t //all the data needed fot FOOD
 {
 	int x;
 	int y;
 };
 
-enum error_t
+enum error_t //the return type of the Snake::move()
 {
-	NORMAL,
-	INTERSECT
+	NORMAL, //normal operation, moving succeeded
+	INTERSECT // we tried to eat ourself! how disgusting!
 };
 
-enum dir_t
+enum dir_t //the possible directions to go to
 {
 	DIR_UP,
 	DIR_DOWN,
 	DIR_RIGHT,
 	DIR_LEFT,
-	DIR_VOID
+	DIR_VOID //for invalidities in e.g. the input
 };
 
 class Snake
 {
 public:
-	Snake();
+	Snake(int); //constructor - sets up the snake
 	~Snake();
 
-	error_t move(dir_t dir);
-	void displ();
-	void initWelcome();
-	void displWelcome(int time);
-	dir_t getdir();
-	int getLen();
-	void gameOver();
-	void exit();
+	error_t move(dir_t dir); //moves the snake. Return NORMAL on success
+	void displ(); //render the snake to the screen
+	void initWelcome(); //init..
+	void displWelcome(int time); //.. and display (and update) the welcome message
+	dir_t getdir(); //get the new direction from the user
+	int getLen(); //returns the length of the snake
+	void gameOver(); //display the game over -message and score
 	
-	int speed;
-	dir_t curDir;
+	int speed; //the speed (10 is faster than 100)
+	dir_t curDir; //the direction we are going
 	
 private:
-	int rows, cols;
-	int length;
-	food_t* food;
+	int rows, cols; //size of the screen
+	int length; //len of the snake
+	food_t* food; //the current food entity
+	std::vector<snakePiece > snakeBody; //contains the snake's pieces
 
-	void eat();
-	void spawnFood();
+	void eat(); //eat the current food if we intersect with it
+	void spawnFood(); //spawn a new food to the screen
 	
-	void addPiece(snakePiece);
-	std::vector<snakePiece > snakeBody;
-	void initScreen();
-	bool matches(snakePiece piece1, snakePiece piece2);
+	void addPiece(snakePiece); //add a new piece to the end of the snake
+	void initScreen(); //sets up curses
+	
+	bool matches(snakePiece, snakePiece);
+	bool matches(food_t, snakePiece);
 };
 
 #endif //_H_SNAKE

@@ -27,27 +27,29 @@
 
 using namespace std;
 
-Snake::Snake()
+Snake::Snake(int speed=100)
 {
-	initscr();
+	initscr(); //start curses mode
 	cbreak(); //disable line buffering
-	noecho();
-	//halfdelay(1); //don't wait for the user's input for too long
-	timeout(1);
-	keypad(stdscr, TRUE);
+	noecho(); //dont echo input to the screen
+	timeout(1); //don't wait for the user's input for too long
+	keypad(stdscr, TRUE); //enable arrow keys
 
-	getmaxyx(stdscr, rows, cols);
+	getmaxyx(stdscr, rows, cols); //get screen size
 
 	food = 0;
 	spawnFood();
-	speed = 100;
-	length = 2;
 	
+	this->speed = speed;
+	length = 2;
+
+	//create the initial snake
 	snakePiece init = {cols/2, rows/2};
 	snakeBody.push_back(init);
 	snakePiece temp = {(cols/2 +1), rows/2};
 	snakeBody.push_back(temp);
 
+	//and display the welcome message
 	initWelcome();
 }
 
@@ -84,7 +86,8 @@ void Snake::initScreen()
 
 error_t Snake::move(dir_t dir)
 {
-	snakePiece temp;
+	snakePiece temp; //a new temporary piece of the snake
+	int origSpeed;
 
 	switch(dir)
 	{
@@ -99,37 +102,44 @@ error_t Snake::move(dir_t dir)
 		break;
 		
 	case DIR_LEFT:
+		origSpeed = speed;
+		
+		if (speed > 60)
+			speed -= 50; //compensate for line spacing
+
 		temp.x = snakeBody.back().x - 1;
 		temp.y = snakeBody.back().y;
+		
+		speed = origSpeed;
 		break;
 		
 	case DIR_RIGHT:
+		origSpeed = speed;
+		
+		if (speed > 60)
+			speed -= 50; //compensate for line spacing
+		
 		temp.x = snakeBody.back().x + 1;
 		temp.y = snakeBody.back().y;
+
+		speed = origSpeed;
 		break;
+		
 	case DIR_VOID:
 		break;
 	}
 
 	if (temp.y < 1) //we are out of the screen..
-	{
 		temp.y = rows-2;
-	}
 
 	else if (temp.y > rows-2) //we are out of the screen..
-	{
 		temp.y = 1;
-	}
-
+	
    	else if (temp.x < 1) //we are out of the screen..
-	{
 		temp.x = cols-2;
-	}
 	
 	else if (temp.x > cols-2) //we are out of the screen..
-	{
 		temp.x = 1;
-	}
 
 	//does the snake intersect with itself?
 	bool intersect = false;
@@ -139,15 +149,15 @@ error_t Snake::move(dir_t dir)
 			intersect = true;
 	}
 	
-	//if theres food at our "head", we shall eat it and become longer
-	if (food && (temp.x == food->x && temp.y == food->y))
+	//if theres food at our "head", we shall eat it and become longer..
+	if (food && matches(*food, temp))
 	{
 		eat();
-		spawnFood();
+		spawnFood(); //and add a new food! yay! FOOD
 		length++;
     }
 
-	else if (!intersect) //which means that we should not erase the "tail" piece..
+	else if (!intersect) //.. which means that we should not erase the "tail" piece
 		snakeBody.erase(snakeBody.begin()); //erase first element
 
 	if (intersect)
@@ -166,9 +176,17 @@ bool Snake::matches(snakePiece piece1, snakePiece piece2)
 	return false;
 }
 
+bool Snake::matches(food_t itemFood, snakePiece itemSnake)
+{
+	if ((itemFood.x == itemSnake.x) && (itemFood.y == itemSnake.y))
+		return true;
+	
+	return false;
+}
+
 dir_t Snake::getdir()
 {
-	//fetch input from user
+	//get input from user
 	
 	int ch = getch();
 	dir_t ret;
@@ -178,27 +196,34 @@ dir_t Snake::getdir()
 	case KEY_LEFT:
 		ret = DIR_LEFT;
 		break;
+		
 	case KEY_RIGHT:
 		ret = DIR_RIGHT;
-		break;		
+		break;
+		
 	case KEY_UP:
 		ret = DIR_UP;
-		break;		
+		break;
+		
 	case KEY_DOWN:
 		ret = DIR_DOWN;
-		break;		
+		break;
+		
 	case ERR:
 	default:
 		return DIR_VOID;	
 	}
 
-	//we can't turn around 180 degs at once!
+	//we can't turn around 180 degs at once! we would ourself if we did that..
 	if (ret == DIR_LEFT && curDir == DIR_RIGHT)
 		return DIR_VOID;
+	
 	else if (ret == DIR_RIGHT && curDir == DIR_LEFT)
 		return DIR_VOID;
+	
 	else if (ret == DIR_UP && curDir == DIR_DOWN)
 		return DIR_VOID;
+	
 	else if (ret == DIR_DOWN && curDir == DIR_UP)
 		return DIR_VOID;
 	else
@@ -211,8 +236,8 @@ void Snake::eat()
 	delete food;
 	food = 0;
 	
-	if (speed > 50) //for the game shall not be too easy :Dx
-		speed--;
+	if (speed > 10) // the game shall not be too easy :D
+		speed--; //it actually makes the snake go faster, just belive me..
 }
 
 void Snake::spawnFood()
@@ -223,15 +248,15 @@ void Snake::spawnFood()
 	
 	while (!avail)
 	{
-		temp->x = rand() % (cols - 2);
+		temp->x = rand() % (cols - 2); //generate a random position for our new, shiny food
 		temp->y = rand() % (rows - 2);
 
-		temp->x++;
+		temp->x++; //and make sure it isn't inside the borders..
 		temp->y++;
 		
 		avail = true;
 		
-		for (unsigned int i = 0; i < snakeBody.size(); i++)
+		for (unsigned int i = 0; i < snakeBody.size(); i++) //and check that it doesn't intersect with our snake
 		{
 			if (temp->x == snakeBody.at(i).x && temp->y == snakeBody.at(i).y) {
 				avail = false;
@@ -240,12 +265,12 @@ void Snake::spawnFood()
 		}
 	}
 
-	food = temp; //set as cur food
+	food = temp; //all tests passed, set as cur food
 }
 
 int Snake::getLen()
 {
-	return length;
+	return length; //returns th.. Well, i hope you know what this does.. :D
 }
 
 void Snake::initWelcome()
@@ -254,41 +279,39 @@ void Snake::initWelcome()
 	int msglen = strlen(msg);
 
 	mvprintw(8, (cols-msglen)/2, msg);
-	refresh();
+	refresh(); //updates curses
 }
 
 void Snake::displWelcome(int time)
 {
 	char msg[20];
 
-	sprintf(msg, "Game will begin in %i..", time);
-	int msglen = strlen(msg);
+	sprintf(msg, "Game will begin in %i..", time); //generates the message
 
-	mvprintw(9, (cols-msglen)/2, msg);
+	mvprintw(9, (cols - strlen(msg)) / 2, msg);
 	refresh();
 }
 
 void Snake::gameOver()
-{
-	char msg[] = "Game over!";
-	int msglen = strlen(msg);
+{   // display game over message
+	char msg_go[] = "Game over!";
 
-	mvprintw(8, (cols-msglen)/2, msg);
+	mvprintw(8, (cols - strlen(msg_go)) / 2, msg_go);
 
 	char score[50];
 
 	sprintf(score, "Score: %i", length);
-	int scoreLen = strlen(score);
-
-	mvprintw(10, (cols-scoreLen)/2, score);
-
+	
+	mvprintw(10, (cols - strlen(score)) / 2, score);
+	
+	char msg[] = "Press any key..";
+	
+	mvprintw(16, (cols - strlen(msg)) / 2, msg);
 	refresh();
-}
 
-void Snake::exit()
-{
-	mvprintw(16, (cols-strlen("Press any key.."))/2, "Press any key..");
-	timeout(0);
-	while (getch() == ERR)
-		int x = 0;
+	
+	timeout(0); //disable the timeout functionality
+	            //actually, it makes getch() return ERR if no input is instantly available..
+	
+	while (getch() == ERR); //we wait for user to press a key..
 }

@@ -17,70 +17,80 @@
 
 /* main.cpp - defines entry point and main game loop*/
 
-#include <cstdio>
+#include <stdio.h>
 #include <iostream>
-#include <sys/time.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "snake.h"
 
 using namespace std;
 
-int main()
+int main(int argc, char **argv)
 {
-	timeval t1, t2;
+	time_t t1, t2;
 	double dur;
-	dir_t dir;
+	dir_t dir, tempDir;
+	bool receivedDir = false;
 
-	Snake* pSnake = new Snake;
+	int speed = 100; //default speed
+
+	if (argc >= 2) //if user gives a more preferred speed (as command-libne arg), we use that.
+	{
+		if (isdigit(argv[1][0])) //but only if it is a digit
+			speed = atoi(argv[1]);
+	}
+	
+	Snake* pSnake = new Snake(speed);
 	pSnake->curDir = DIR_RIGHT;
 	
-	gettimeofday(&t1, NULL);
+	time(&t1); //get current time
 
-	while (true) //show welcome message
+	while (true) //show welcome message for 5 seconds
 	{
-		gettimeofday(&t2, NULL); //get delay
-		dur = (t2.tv_sec - t1.tv_sec) * 1000.0;
-		dur += (t2.tv_usec - t1.tv_usec) / 1000.0;
+	    time(&t2);
+		dur = difftime(t2, t1); //calculate difference
 
-		if (dur > 5000)
+		if (dur >= 5) // <-- that is the magic 5 :D
 			break;
-
-		pSnake->displWelcome((int)(5-dur/1000.0));
+		
+		pSnake->displWelcome((int)5-dur); //display welcome message with remaining time
 	}
 
-	pSnake->displ();
-	
-	while (true)
-	{
-		gettimeofday(&t2, NULL); //get delay
-		dur = (t2.tv_sec - t1.tv_sec) * 1000.0;
-		dur += (t2.tv_usec - t1.tv_usec) / 1000.0;
+	pSnake->displ(); //display the (inital)snake
 
-		dir = pSnake->getdir(); //get input
-		if (dir == DIR_VOID)
-				dir = pSnake->curDir;
-		else
-			pSnake->curDir = dir;
-		
-		if (((pSnake->curDir == DIR_UP || pSnake->curDir == DIR_DOWN) && dur > pSnake->speed)
-			|| ((pSnake->curDir == DIR_RIGHT || pSnake->curDir == DIR_LEFT) && dur > (pSnake->speed-50)))
-			//compensates the line spacing, thus such complication..
-		{
-			pSnake->curDir = dir;
+	time(&t1);
+	
+	while (true) //the main game loop
+	{
+		receivedDir = false;
+
+		// we get <pSnake->speed> milliseconds of frametime (ncurses timeout is set to 1ms)
+		for (int i = 0; i < pSnake->speed; i++) // this might seem weird ("Why not just a simple time delay? wtf..")
+		{                                       // but I had problems with <sys/time>::gettimeofday()
+			                                    // so its curses' delay doing the job..
+			tempDir = pSnake->getdir(); //get input
 			
-			if (pSnake->move(dir) == INTERSECT) //interscetion -> game over
+			if (tempDir != DIR_VOID) //if no input was received, we keep the previous direction.
 			{
-				pSnake->gameOver();
-				pSnake->exit();
-				
-				delete pSnake;
-				return 0;
+				receivedDir = true; //we have received input, so DIR_VOID has no power anymore
+				dir = tempDir;  //
 			}
-			
-			pSnake->displ();
-			
-			gettimeofday(&t1, NULL);
 		}
+
+		if (receivedDir) //if we received input..
+			pSnake->curDir = dir; //..we set the new direction as the current one
+		
+	    //time to move the snake and do other thingys!
+			
+		if (pSnake->move(dir) == INTERSECT) //interscetion -> game over
+		{
+			pSnake->gameOver();			
+			delete pSnake;
+			return 0;
+		}
+			
+		pSnake->displ(); //re-render the snake
 	}
 
 	return 0;
