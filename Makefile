@@ -15,7 +15,7 @@ LDFLAGS=$(LIBS) -g -o $(EXEC)
 
 all: compile link
 
-install: all
+install: $(EXEC)
 	cp $(EXEC) $(INSTALL_DIR)
 
 compile: $(SRCS) $(HDRS)
