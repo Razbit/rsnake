@@ -42,7 +42,6 @@ int main(int argc, char **argv)
 	}
 	
 	Snake* pSnake = new Snake(speed);
-	pSnake->curDir = DIR_RIGHT;
 	
 	time(&t1); //get current time
 
