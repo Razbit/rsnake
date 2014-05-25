@@ -9,7 +9,7 @@ How to build & run?
 Unfortunately, no Windows support at this moment. Feel free to contact me, if you have a viable solution for getting curses working on Windows.
 
 UNIX -derivatives:
-- Make sure you have g++, make and ncurses (libncurses-dev) installed. Then inside the rsnake directory run:
+Make sure you have g++, make and ncurses (libncurses-dev) installed. Then inside the rsnake directory run:
 
  make
 
