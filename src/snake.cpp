@@ -42,6 +42,7 @@ Snake::Snake(int speed=100)
 	
 	this->speed = speed;
 	length = 2;
+	curDir = DIR_RIGHT;
 
 	//create the initial snake
 	snakePiece init = {cols/2, rows/2};
