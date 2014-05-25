@@ -1,0 +1,76 @@
+Rsnake
+
+Copyright Eetu "Razbit" Pesonen, 2014
+
+Lisensoitu GNU General Public License -lisenssin 3. version mukaisin ehdoin. Lue LICENSE -tiedosto.
+
+Tämän dokumentaation sisältö voi muuttua ilman erillistä huomautusta.
+
+1. Ohjelman esittely ja analysointi
+-------------------------------------
+Rsnake on peli, jota on inspiroinut 70-luuvn Snake -arcadepeli. Peli on yksinpeli, jossa ohjataan matoa ymnpäri kenttää, ja koitetaan tehdä siitä mahdollisimman pitkä syömällä ruokaa (F -kirjain ruudussa). Pelikentän ulkopuolelle joutuessaan jatkaa mato matkaansa kentän toiselta puolelta. Jos mato yrittää läpäistä itsensä, peli loppuu.
+
+Peli toimii ncurses -kirjastolla toteutetussa komentoriviympäristössä, joten tuki löytyy suoraan UNIX varianteille. Windows -tukea ei juuri nyt ole saatavilla, eikä se ole pääprioriteettinakaan kehityksessä.
+
+2. Syötteet ja tulosteet
+--------------------------
+Ohjelmassa ei ole muita komentoja kuin nuolinäppäimet, joilla matoa ohjataan. Kun pelin avaa kometoriviltä, voi madon nopeutta tosin muuttaa kirjoittamalla:
+  rsnake <nopeus>
+missä <nopeus> on haluttu aika millisekunteina, mikä kuluu madon liikkuessa ruudusta toiseen.
+
+Kun pelin on tarkoitus loppua (mato yrittää syödä itseään), näytetään pelaajan pisteet (madon pituus), ja pyydetään käyttäjää painamaan returnia.
+
+
+3. Ohjelman toiminta
+----------------------
+Kun ohjelma avataan, tarkistaa se ensin mahdollisesti annetun nopeuden. Mikäli nopeutta ei ole annettu, käytetään oletusarvoa (100). Tämän jälkeen luodaan Snake -luokasta instanssi, jonka osoite talletetaan pSnake -muuttujaan.
+
+Tämän jälkeen näytetään aloitusruutua muutama sekunti ja mennään pelilooppiin, jossa haetaan pelaajalta uusi suunta madolle. Jos sitä ei anneta, jatketaan vanhaan suuntaan. Sitten matoa liikutetaan ja tarkistetaan, ettei mato syö itseään. Jos niin kuitenkin on, loppuu peli ja lopetusruutua näytetään, kunnes pelaaja painaa returnia.
+
+4. Ohjelman osien kuvaus
+--------------------------
+4.1. Luokan Snake kuvaus
+--------------------------
+4.1.1 Muutujat
+----------------
+4.1.1.1 Muuttujatyypit
+------------------------
+struct snakePiece: sisältää madon yhden palan koordinaatit.
+struct food_t: sisältää ruoan koordinaatit.
+enum error_t: Snake::move() -metodin mahdolliset palautusarvot.
+	 error_t::NORMAL: kaikki hyvin matoa liikutettaessa.
+	 error_t::INTERSECT: palautetaan, jos mato yrittää syödä itseään.
+enum dir_t: mahdolliset suunnat, joihin mato voi kulkea.
+	 dir_t::VOID: käytetään, jos mahdoton liikkumissuunta tai suuntaa ei saatu käyttäjältä.
+
+4.1.1.2 Luokan muuttujat
+--------------------------
+public int speed: madon liikkumiseen kuluva aika, tämä aika käytetään syötteen kyselemiseen.
+public dir_t curDir: madon nykyinen liikkumissuunta.
+private int rows, cols: näytön koko (rivejä, kirjaimia rivillä).
+private int length: madon pituus.
+private food_t *food: nykyisen ruoan osoite.
+private vector<snakePiece > snakeBody: lista madon paloista.
+
+4.1.1.3 Muut globaalit muuttujat
+----------------------------------
+bodyCh: kirjain, jota käytetään madon vartalon piirtämiseen.
+headCh: kirjain madon pään piirtoon.
+foodCh: ruoan symboli.
+
+4.1.2 Metodit
+---------------
+Snake(int): konstruktori
+~Snake(): destruktori 
+
+error_t move(dir_t dir): liikuttaa matoa parametrin dir suuntaan. Palautus arvo ks. 4.1.1.1.
+void displ(): päivittää näytön.
+void initWelcome(): alustaa aloitusnäytön.
+void displWelcome(int time) päivittää aloitusnäytön
+dir_t getdir(): ottaa pelaajalta suunnan ja tarkistaa, onko liikkuminen mahdollista siihen suuntaan.
+int getLen(): palauttaa madon pituuden.
+void gameOver(): näyttää lopputekstit, odottaa returnin painallusta.
+
+5. Testaus
+------------
+Ohjelman toimintaa on testattu 14.04 käyttöjärjestelmässä. Mikäli bugeja löytyy tai muita parannusehdotuksia on, ota vapaasti yhteyttä: razclocker@gmail.com
