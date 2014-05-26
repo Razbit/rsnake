@@ -305,7 +305,7 @@ void Snake::gameOver()
 	
 	mvprintw(10, (cols - strlen(score)) / 2, score);
 	
-	char msg[] = "Press any key..";
+	char msg[] = "Press return to exit..";
 	
 	mvprintw(16, (cols - strlen(msg)) / 2, msg);
 	refresh();
@@ -314,5 +314,5 @@ void Snake::gameOver()
 	timeout(0); //disable the timeout functionality
 	            //actually, it makes getch() return ERR if no input is instantly available..
 	
-	while (getch() == ERR); //we wait for user to press a key..
+	while (getch() != '\r'); //we wait for user to press return..
 }
