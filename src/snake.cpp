@@ -314,5 +314,9 @@ void Snake::gameOver()
 	timeout(0); //disable the timeout functionality
 	            //actually, it makes getch() return ERR if no input is instantly available..
 	
-	while (getch() != '\r'); //we wait for user to press return..
+	while (true) //we wait for user to press return.. 
+	{
+		if (getch() == '\r' || getch() == '\n')
+			break;
+	}
 }
